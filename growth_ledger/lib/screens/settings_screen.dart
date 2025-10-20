@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:growth_ledger/screens/category_management_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   final Function(ThemeMode) changeTheme;
-  const SettingsScreen({super.key, required this.changeTheme});
+  final VoidCallback onLogout;
+
+  const SettingsScreen({super.key, required this.changeTheme, required this.onLogout});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +25,7 @@ class SettingsScreen extends StatelessWidget {
               onChanged: (value) {
                 changeTheme(value ? ThemeMode.dark : ThemeMode.light);
               },
-              activeColor: Theme.of(context).colorScheme.secondary,
+              activeThumbColor: Theme.of(context).colorScheme.secondary,
             ),
           ),
           const ListTile(
@@ -32,6 +35,21 @@ class SettingsScreen extends StatelessWidget {
           const ListTile(
             leading: Icon(Icons.notifications_outlined),
             title: Text('알림'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.category_outlined),
+            title: const Text('카테고리 관리'),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (ctx) => const CategoryManagementScreen()),
+              );
+            },
+          ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.logout, color: Colors.red),
+            title: const Text('로그아웃', style: TextStyle(color: Colors.red)),
+            onTap: onLogout,
           ),
         ],
       ),

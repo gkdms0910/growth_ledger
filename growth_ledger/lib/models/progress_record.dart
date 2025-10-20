@@ -4,18 +4,12 @@ part 'progress_record.g.dart';
 
 @JsonSerializable()
 class ProgressRecord {
-  final String id;
-  final String goalId;
-  String note;
-  double? value;
   final DateTime recordedAt;
+  final double value; // Or int, depending on how progress is measured
 
   ProgressRecord({
-    required this.id,
-    required this.goalId,
-    required this.note,
-    this.value,
     required this.recordedAt,
+    required this.value,
   });
 
   factory ProgressRecord.fromJson(Map<String, dynamic> json) => _$ProgressRecordFromJson(json);

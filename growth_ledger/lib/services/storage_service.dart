@@ -36,4 +36,28 @@ class StorageService {
     final json = goals.map((e) => e.toJson()).toList();
     return file.writeAsString(jsonEncode(json));
   }
+
+  Future<File> get _localCategoriesFile async {
+    final path = await _localPath;
+    return File('$path/categories.json');
+  }
+
+  Future<List<String>> readCategories() async {
+    try {
+      final file = await _localCategoriesFile;
+      if (!await file.exists()) {
+        return [];
+      }
+      final contents = await file.readAsString();
+      final List<dynamic> json = jsonDecode(contents);
+      return json.cast<String>();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<File> writeCategories(List<String> categories) async {
+    final file = await _localCategoriesFile;
+    return file.writeAsString(jsonEncode(categories));
+  }
 }

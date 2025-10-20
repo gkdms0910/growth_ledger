@@ -12,6 +12,13 @@ Goal _$GoalFromJson(Map<String, dynamic> json) => Goal(
   description: json['description'] as String?,
   category: json['category'] as String,
   createdAt: DateTime.parse(json['createdAt'] as String),
+  targetValue: (json['targetValue'] as num?)?.toDouble(),
+  deadline: json['deadline'] == null
+      ? null
+      : DateTime.parse(json['deadline'] as String),
+  subTasks: (json['subTasks'] as List<dynamic>?)
+      ?.map((e) => e as Map<String, dynamic>)
+      .toList(),
   progressRecords: (json['progressRecords'] as List<dynamic>?)
       ?.map((e) => ProgressRecord.fromJson(e as Map<String, dynamic>))
       .toList(),
@@ -23,5 +30,8 @@ Map<String, dynamic> _$GoalToJson(Goal instance) => <String, dynamic>{
   'description': instance.description,
   'category': instance.category,
   'createdAt': instance.createdAt.toIso8601String(),
+  'targetValue': instance.targetValue,
+  'deadline': instance.deadline?.toIso8601String(),
+  'subTasks': instance.subTasks,
   'progressRecords': instance.progressRecords.map((e) => e.toJson()).toList(),
 };
