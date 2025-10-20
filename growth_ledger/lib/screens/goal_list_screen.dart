@@ -1,39 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:growth_ledger/models/goal.dart';
-import 'package:growth_ledger/screens/add_goal_screen.dart';
 import 'package:growth_ledger/screens/goal_detail_screen.dart';
 
 class GoalListScreen extends StatelessWidget {
   final List<Goal> goals;
-  final Function(List<Goal>) onUpdate;
+  final VoidCallback onAddGoal;
+  final VoidCallback onUpdateGoal;
+  final Function(String) onDeleteGoal;
 
-  const GoalListScreen({super.key, required this.goals, required this.onUpdate});
-
-  void _navigateToAddGoalScreen(BuildContext context) async {
-    final newGoal = await Navigator.of(context).push<Goal>(
-      MaterialPageRoute(builder: (ctx) => const AddGoalScreen()),
-    );
-
-    if (newGoal != null) {
-      goals.add(newGoal);
-      onUpdate(goals);
-    }
-  }
-
-  void _deleteGoal(int index) {
-    goals.removeAt(index);
-    onUpdate(goals);
-  }
+  const GoalListScreen({
+    super.key,
+    required this.goals,
+    required this.onAddGoal,
+    required this.onUpdateGoal,
+    required this.onDeleteGoal,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('내 목표'),
+        title: const Text('목표 설정'),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () => _navigateToAddGoalScreen(context),
+            onPressed: onAddGoal,
           ),
         ],
       ),
@@ -54,7 +45,7 @@ class GoalListScreen extends StatelessWidget {
                   key: Key(goal.id),
                   direction: DismissDirection.endToStart,
                   onDismissed: (direction) {
-                    _deleteGoal(index);
+                    onDeleteGoal(goal.id);
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('목표가 삭제되었습니다.')),
                     );
@@ -74,7 +65,7 @@ class GoalListScreen extends StatelessWidget {
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (ctx) => GoalDetailScreen(goal: goal, onUpdate: () => onUpdate(goals)),
+                            builder: (ctx) => GoalDetailScreen(goal: goal, onUpdate: onUpdateGoal),
                           ),
                         );
                       },

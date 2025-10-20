@@ -1,10 +1,8 @@
-
 import 'package:flutter/material.dart';
-import 'package:growth_ledger/models/goal.dart';
-import 'package:growth_ledger/screens/dashboard_screen.dart';
-import 'package:growth_ledger/screens/goal_list_screen.dart';
-import 'package:growth_ledger/screens/settings_screen.dart';
-import 'package:growth_ledger/services/storage_service.dart';
+import 'package:growth_ledger/screens/home_screen.dart';
+import 'package:growth_ledger/screens/login_screen.dart';
+import 'package:growth_ledger/screens/usage_example_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(const GrowthLedgerApp());
@@ -19,6 +17,59 @@ class GrowthLedgerApp extends StatefulWidget {
 
 class _GrowthLedgerAppState extends State<GrowthLedgerApp> {
   ThemeMode _themeMode = ThemeMode.system;
+  bool _isLoggedIn = false;
+  bool _hasCompletedUsageSetup = false;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkLoginStatus();
+  }
+
+  Future<void> _checkLoginStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+      _hasCompletedUsageSetup = prefs.getBool('hasCompletedUsageSetup') ?? false;
+      _isLoading = false;
+    });
+  }
+
+  Future<void> _login() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isLoggedIn', true);
+    setState(() {
+      _isLoggedIn = true;
+      _hasCompletedUsageSetup = prefs.getBool('hasCompletedUsageSetup') ?? false;
+    });
+  }
+
+  Future<void> _handleSignUp() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isLoggedIn', true);
+    await prefs.setBool('hasCompletedUsageSetup', false);
+    setState(() {
+      _isLoggedIn = true;
+      _hasCompletedUsageSetup = false;
+    });
+  }
+
+  void _logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isLoggedIn', false);
+    setState(() {
+      _isLoggedIn = false;
+    });
+  }
+
+  Future<void> _completeUsageSetup() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('hasCompletedUsageSetup', true);
+    setState(() {
+      _hasCompletedUsageSetup = true;
+    });
+  }
 
   void _changeTheme(ThemeMode themeMode) {
     setState(() {
@@ -38,17 +89,24 @@ class _GrowthLedgerAppState extends State<GrowthLedgerApp> {
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.white,
           elevation: 0,
-          titleTextStyle: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),
+          titleTextStyle: TextStyle(
+            color: Colors.black,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
           iconTheme: IconThemeData(color: Colors.black),
         ),
         textTheme: const TextTheme(
-          headlineMedium: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
+          headlineMedium: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
           bodyMedium: TextStyle(fontSize: 16, color: Colors.black87),
         ),
-        colorScheme: ColorScheme.fromSwatch(brightness: Brightness.light).copyWith(
-          primary: Colors.black,
-          secondary: Colors.blueAccent,
-        ),
+        colorScheme: ColorScheme.fromSwatch(
+          brightness: Brightness.light,
+        ).copyWith(primary: Colors.black, secondary: Colors.blueAccent),
       ),
       darkTheme: ThemeData(
         brightness: Brightness.dark,
@@ -58,105 +116,33 @@ class _GrowthLedgerAppState extends State<GrowthLedgerApp> {
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.black,
           elevation: 0,
-          titleTextStyle: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+          titleTextStyle: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
           iconTheme: IconThemeData(color: Colors.white),
         ),
         textTheme: const TextTheme(
-          headlineMedium: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+          headlineMedium: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
           bodyMedium: TextStyle(fontSize: 16, color: Colors.white70),
         ),
-        colorScheme: ColorScheme.fromSwatch(brightness: Brightness.dark).copyWith(
-          primary: Colors.white,
-          secondary: Colors.lightBlueAccent,
-        ),
+        colorScheme: ColorScheme.fromSwatch(
+          brightness: Brightness.dark,
+        ).copyWith(primary: Colors.white, secondary: Colors.lightBlueAccent),
       ),
       themeMode: _themeMode,
-      home: HomeScreen(changeTheme: _changeTheme),
-    );
-  }
-}
-
-class HomeScreen extends StatefulWidget {
-  final Function(ThemeMode) changeTheme;
-  const HomeScreen({super.key, required this.changeTheme});
-
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  final StorageService _storageService = StorageService();
-  List<Goal> _goals = [];
-  bool _isLoading = true;
-  int _selectedIndex = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadGoals();
-  }
-
-  Future<void> _loadGoals() async {
-    final goals = await _storageService.readGoals();
-    setState(() {
-      _goals = goals;
-      _isLoading = false;
-    });
-  }
-
-  Future<void> _updateGoals() async {
-    // This function now just saves the current state of _goals
-    await _storageService.writeGoals(_goals);
-    // We might want to refetch or just trust the current state
-    setState(() {}); // Refresh UI
-  }
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final List<Widget> widgetOptions = <Widget>[
-      DashboardScreen(goals: _goals),
-      GoalListScreen(goals: _goals, onUpdate: (updatedGoals) {
-        setState(() { _goals = updatedGoals; });
-        _storageService.writeGoals(_goals);
-      }),
-      SettingsScreen(changeTheme: widget.changeTheme),
-    ];
-
-    return Scaffold(
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : widgetOptions.elementAt(_selectedIndex),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard_outlined),
-            label: '대시보드',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.flag_outlined),
-            label: '목표',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings_outlined),
-            label: '설정',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        // Theme-aware colors will be picked up automatically
-        // selectedItemColor: Colors.black,
-        // unselectedItemColor: Colors.grey[400],
-        showUnselectedLabels: true,
-        type: BottomNavigationBarType.fixed,
-        // backgroundColor: Colors.white,
-        elevation: 0,
-      ),
+      home: _isLoading
+          ? const Scaffold(body: Center(child: CircularProgressIndicator()))
+          : !_isLoggedIn
+              ? LoginScreen(onLogin: _login, onSignUpComplete: _handleSignUp)
+              : !_hasCompletedUsageSetup
+                  ? UsageExampleScreen(onComplete: _completeUsageSetup)
+                  : HomeScreen(changeTheme: _changeTheme, onLogout: _logout),
     );
   }
 }
