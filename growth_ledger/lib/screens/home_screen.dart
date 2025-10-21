@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:growth_ledger/models/goal.dart';
+import 'package:growth_ledger/models/user.dart';
 import 'package:growth_ledger/screens/add_goal_screen.dart';
 import 'package:growth_ledger/screens/goal_list_screen.dart';
 import 'package:growth_ledger/screens/my_page_screen.dart';
@@ -11,8 +12,18 @@ import 'package:growth_ledger/services/storage_service.dart';
 class HomeScreen extends StatefulWidget {
   final Function(ThemeMode) changeTheme;
   final VoidCallback onLogout;
+  final User currentUser;
+  final ValueChanged<User> onUserUpdated;
+  final List<Goal>? testingGoals;
 
-  const HomeScreen({super.key, required this.changeTheme, required this.onLogout});
+  const HomeScreen({
+    super.key,
+    required this.changeTheme,
+    required this.onLogout,
+    required this.currentUser,
+    required this.onUserUpdated,
+    this.testingGoals,
+  });
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -26,7 +37,12 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _loadGoals();
+    if (widget.testingGoals != null) {
+      _goals = List<Goal>.from(widget.testingGoals!);
+      _isLoading = false;
+    } else {
+      _loadGoals();
+    }
   }
 
   Future<void> _loadGoals() async {
@@ -91,7 +107,14 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _openMyPage() async {
     await Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => const MyPageScreen(),
+        builder: (_) => MyPageScreen(
+          user: widget.currentUser,
+          goals: _goals,
+          onUserUpdated: (updatedUser) {
+            widget.onUserUpdated(updatedUser);
+            setState(() {});
+          },
+        ),
       ),
     );
   }
@@ -99,7 +122,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _openSocial() async {
     await Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => const SocialScreen(),
+        builder: (_) => SocialScreen(currentUser: widget.currentUser),
       ),
     );
   }
@@ -107,7 +130,15 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _openSettings() async {
     await Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => SettingsScreen(changeTheme: widget.changeTheme, onLogout: widget.onLogout),
+        builder: (_) => SettingsScreen(
+          changeTheme: widget.changeTheme,
+          onLogout: widget.onLogout,
+          currentUser: widget.currentUser,
+          onUserUpdated: (updatedUser) {
+            widget.onUserUpdated(updatedUser);
+            setState(() {});
+          },
+        ),
       ),
     );
   }
@@ -134,6 +165,11 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Text(
+              '안녕하세요, ${widget.currentUser.name}님',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
             Text(
               '오늘의 한눈에 보기',
               style: Theme.of(context).textTheme.titleLarge,
@@ -164,6 +200,26 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ],
             ),
+            if (widget.currentUser.preferredCategories.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              Text(
+                '관심 목표 유형',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: widget.currentUser.preferredCategories
+                    .map(
+                      (category) => Chip(
+                        label: Text(category),
+                        backgroundColor: colorScheme.secondaryContainer.withValues(alpha: 0.3),
+                      ),
+                    )
+                    .toList(),
+              ),
+            ],
           ],
         ),
       ),
@@ -279,6 +335,7 @@ class _SummaryTile extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           value,
+          key: ValueKey('${label}_value'),
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
         ),
         Text(label, style: Theme.of(context).textTheme.bodySmall),

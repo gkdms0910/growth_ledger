@@ -161,6 +161,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
           child: ListView(
             children: [
               TextFormField(
+                key: const ValueKey('goal_title_field'),
                 controller: _titleController,
                 decoration: const InputDecoration(labelText: '목표 제목'),
                 validator: (value) {

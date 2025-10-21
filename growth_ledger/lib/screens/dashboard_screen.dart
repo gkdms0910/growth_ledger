@@ -1,12 +1,23 @@
 
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:growth_ledger/models/user.dart';
+import 'package:growth_ledger/screens/my_page_screen.dart';
+import 'package:growth_ledger/screens/social_screen.dart';
 import 'package:growth_ledger/screens/statistics_screen.dart';
 import '../models/goal.dart';
 
 class DashboardScreen extends StatelessWidget {
   final List<Goal> goals;
-  const DashboardScreen({super.key, required this.goals});
+  final User currentUser;
+  final ValueChanged<User>? onUserUpdated;
+
+  const DashboardScreen({
+    super.key,
+    required this.goals,
+    required this.currentUser,
+    this.onUserUpdated,
+  });
 
   List<double> _getWeeklyProgress() {
     final now = DateTime.now();
@@ -33,6 +44,30 @@ class DashboardScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('대시보드'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.person_outline),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => MyPageScreen(
+                    user: currentUser,
+                    goals: goals,
+                    onUserUpdated: onUserUpdated ?? (_) {},
+                  ),
+                ),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.group_outlined),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => SocialScreen(currentUser: currentUser),
+                ),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.bar_chart),
             onPressed: () {

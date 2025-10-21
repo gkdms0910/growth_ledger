@@ -1,16 +1,54 @@
-# growth_ledger
+# Growth Ledger (성장일지)
 
-A new Flutter project.
+Growth Ledger는 사용자가 목표를 설정하고, 세부 계획을 추적하며, 진행 상황을 기록할 수 있도록 돕는 Flutter 애플리케이션입니다.
 
-## Getting Started
+## 주요 기능 및 구조
 
-This project is a starting point for a Flutter application.
+- **UI/UX 개선**: 앱 전반에 걸쳐 현대적이고 깔끔한 디자인 테마가 적용되었습니다.
+- **인증 및 온보딩**:
+  - 이메일/비밀번호 기반의 로컬 계정을 지원하며, 비밀번호는 안전하게 해시 처리됩니다.
+  - 회원가입 시 관심 카테고리를 선택하여 사용자 경험을 맞춤 설정합니다.
 
-A few resources to get you started if this is your first Flutter project:
+- **핵심 화면**:
+  - **홈 대시보드**: 오늘의 요약, 목표 진행 상황, 주요 기능으로 빠르게 이동할 수 있는 네비게이션 허브입니다.
+  - **목표 관리**: 목표와 세부 계획을 추가, 수정, 삭제할 수 있으며, AI가 세부 계획을 추천해주는 기능이 포함되어 있습니다.
+  - **마이 페이지**: 프로필 수정, 목표 달성 통계, 관심 카테고리 재설정 기능을 제공합니다.
+  - **소셜 피드**: 다른 사용자들과 목표 진행 상황을 공유하는 커뮤니티 피드입니다. (현재는 샘플 데이터로 구성)
+  - **설정**: 앱 테마(다크/라이트), 알림, 카테고리 관리 등 개인화된 환경설정을 지원합니다.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- **아키텍처**:
+  - **UI**: `lib/screens/`에 각 기능별 화면이 분리되어 있습니다.
+  - **데이터 모델**: `lib/models/`에 `Goal`, `User` 등 앱에서 사용하는 데이터 구조가 정의되어 있습니다. (`json_serializable` 사용)
+  - **서비스 로직**: `lib/services/`에 파일 저장, 사용자 관리, 소셜 피드 로직 등 핵심 비즈니스 로직이 포함되어 있습니다.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 데이터 저장 방식
+
+- 목표, 사용자 정보, 카테고리 등 주요 데이터는 앱 내부 저장소에 **JSON 파일** 형태로 저장됩니다.
+- 로그인 상태, 알림 설정 등 사용자별 설정은 **SharedPreferences**를 사용하여 유지됩니다.
+
+## 향후 개발 계획 (Outstanding Work)
+
+- 비밀번호 재설정, 이메일 검증 등 고급 인증 기능 추가
+- 소셜 피드의 실시간 작성 및 댓글 기능 구현
+- 데이터 동기화를 위한 백엔드 API 연동
+- 단위 테스트 및 예외 처리 강화
+- UI 다국어화 및 접근성 개선
+
+## 개발 환경 설정
+
+- **의존성 설치**:
+  ```bash
+  flutter pub get
+  ```
+- **앱 실행**:
+  ```bash
+  flutter run
+  ```
+- **데이터 모델 코드 생성**:
+  ```bash
+  dart run build_runner build --delete-conflicting-outputs
+  ```
+- **테스트 실행**:
+  ```bash
+  flutter test
+  ```

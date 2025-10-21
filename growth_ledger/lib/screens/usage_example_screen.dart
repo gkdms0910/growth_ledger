@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class UsageExampleScreen extends StatefulWidget {
-  final Future<void> Function() onComplete;
+  final Future<void> Function(List<String>) onComplete;
 
   const UsageExampleScreen({super.key, required this.onComplete});
 
@@ -53,7 +53,11 @@ class _UsageExampleScreenState extends State<UsageExampleScreen> {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () async {
-                await widget.onComplete();
+                final selected = _selectedExamples.entries
+                    .where((entry) => entry.value)
+                    .map((entry) => entry.key)
+                    .toList();
+                await widget.onComplete(selected);
               },
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size.fromHeight(48),
